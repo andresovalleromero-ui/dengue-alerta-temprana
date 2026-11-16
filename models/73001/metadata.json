@@ -1,0 +1,71 @@
+{
+  "cod_mun": "73001",
+  "predictores": [
+    "P_t-5",
+    "P_t-4",
+    "P_t-3",
+    "P_t-2",
+    "T_t-5",
+    "T_t-4",
+    "T_t-3",
+    "T_t-2",
+    "logC_t-5",
+    "logC_t-4",
+    "logC_t-3",
+    "logC_t-2",
+    "mes_sin",
+    "mes_cos",
+    "oni_t-2",
+    "exceso_t-2"
+  ],
+  "ultimo": "exceso_t-2",
+  "info": {
+    "Logística": {
+      "C": 1,
+      "umbral": 0.4
+    },
+    "XGBoost": {
+      "max_depth": 2,
+      "n_estimators": 50,
+      "umbral": 0.2
+    },
+    "Binomial negativa": {
+      "umbral": 0.05,
+      "alpha_dispersion": 0.14
+    }
+  },
+  "resultados_test": {
+    "Persistencia": {
+      "recall": 0.8888888888888888,
+      "precision": 0.8888888888888888,
+      "f1": 0.8888888888888888,
+      "pr_auc": NaN,
+      "recall_inicios": 0.0,
+      "n_inicios": 2
+    },
+    "Logística": {
+      "recall": 1.0,
+      "precision": 0.6666666666666666,
+      "f1": 0.8,
+      "pr_auc": 0.9186564730244904,
+      "recall_inicios": 1.0,
+      "n_inicios": 2
+    },
+    "XGBoost": {
+      "recall": 1.0,
+      "precision": 0.6428571428571429,
+      "f1": 0.782608695652174,
+      "pr_auc": 0.7570875756020684,
+      "recall_inicios": 1.0,
+      "n_inicios": 2
+    },
+    "Binomial negativa": {
+      "recall": 1.0,
+      "precision": 0.8571428571428571,
+      "f1": 0.9230769230769231,
+      "pr_auc": 0.9872494075602952,
+      "recall_inicios": 1.0,
+      "n_inicios": 2
+    }
+  }
+}
