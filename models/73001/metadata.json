@@ -67,5 +67,11 @@
       "recall_inicios": 1.0,
       "n_inicios": 2
     }
-  }
+  },
+  "tamanos_kb": {
+    "Logística": 2.2,
+    "XGBoost": 52.5,
+    "Binomial negativa": 63.9
+  },
+  "segundos_entrenamiento": 0.5
 }

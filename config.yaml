@@ -1,0 +1,23 @@
+# Parámetros de configuración de la aplicación.
+# Cualquiera de estos valores se puede sobreescribir con una variable de
+# entorno del mismo nombre en mayúsculas (ver src/config.py), sin tocar
+# este archivo ni el código — por ejemplo, para desplegar apuntando a otra
+# carpeta de datos o cambiar el municipio que se muestra por defecto.
+
+app:
+  titulo: "Alerta temprana de dengue"
+  municipio_default: "73001"   # Ibagué
+
+rutas:
+  datos: "data"
+  modelos: "models"
+
+municipios:
+  "73001": "Ibagué"
+  "50001": "Villavicencio"
+  "23001": "Montería"
+
+modelos_archivo:
+  "Logística": "logistica.joblib"
+  "XGBoost": "xgboost.joblib"
+  "Binomial negativa": "binomial_negativa.joblib"

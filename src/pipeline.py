@@ -46,7 +46,7 @@ def particionar(tabla: pd.DataFrame):
     return train, val, test, trval
 
 
-def _predictores(tabla: pd.DataFrame):
+def predictores_de(tabla: pd.DataFrame):
     predictores = [c for c in tabla.columns if c not in NO_PREDICTORES]
     ultimo = [c for c in predictores if c.startswith('exceso_t-')][0]
     return predictores, ultimo
@@ -105,28 +105,31 @@ def ajustar_xgb(train, val, trval, test, cols, ultimo):
     return res, p_test, modelo, {'max_depth': P['max_depth'], 'n_estimators': P['n_estimators'], 'umbral': u}
 
 
-def _X(g, cols, esc):
+def build_X(g, cols, esc):
     return sm.add_constant(pd.DataFrame(esc.transform(g[cols]), columns=cols, index=g.index), has_constant='add')
 
 
 def _ajustar_bn(g, cols):
     esc = StandardScaler().fit(g[cols])
     penal = np.r_[0, np.full(len(cols), PENAL_NB), 0]
-    res = sm.NegativeBinomial(g['casos_obj'], _X(g, cols, esc)).fit_regularized(alpha=penal, disp=0, maxiter=2000)
+    res = sm.NegativeBinomial(g['casos_obj'], build_X(g, cols, esc)).fit_regularized(alpha=penal, disp=0, maxiter=2000)
     return res, esc
 
 
-def _prob_exceso(res, esc, g, cols):
-    mu = res.predict(_X(g, cols, esc))
+def prob_exceso(res, esc, g, cols):
+    """Probabilidad de exceso para una o varias filas g (debe traer 'umbral_obj').
+    Publica porque la app la reutiliza para predecir sobre el mes que elija
+    el usuario, con el modelo binomial negativa ya entrenado."""
+    mu = res.predict(build_X(g, cols, esc))
     n = 1 / res.params['alpha']
     return np.asarray(1 - stats.nbinom.cdf(np.floor(g['umbral_obj']), n, n / (n + mu))), mu
 
 
 def ajustar_binomial(train, val, trval, test, cols, ultimo):
-    p_val, _ = _prob_exceso(*_ajustar_bn(train, cols), val, cols)
+    p_val, _ = prob_exceso(*_ajustar_bn(train, cols), val, cols)
     u = elegir_umbral(val.exceso, p_val)
     modelo, esc = _ajustar_bn(trval, cols)
-    p_test, _ = _prob_exceso(modelo, esc, test, cols)
+    p_test, _ = prob_exceso(modelo, esc, test, cols)
     res = {'val': evaluar(val, p_val >= u, ultimo, p_val), 'test': evaluar(test, p_test >= u, ultimo, p_test)}
     return res, p_test, (modelo, esc), {'umbral': u, 'alpha_dispersion': round(modelo.params['alpha'], 2)}
 
@@ -137,7 +140,7 @@ def entrenar_todos(ruta: str, cod_mun: str):
     de test y los objetos de modelo ya ajustados (listos para serializar)."""
     tabla, nivel2 = cargar_datos(ruta, cod_mun)
     train, val, test, trval = particionar(tabla)
-    predictores, ultimo = _predictores(tabla)
+    predictores, ultimo = predictores_de(tabla)
 
     resultados, probs_test, modelos, info = {}, {}, {}, {}
 
