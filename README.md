@@ -23,7 +23,7 @@ casos y clima de ese periodo.
 
 ## Enlaces
 
-- Aplicación desplegada: _(pendiente — se agrega aquí la URL una vez esté en línea)_
+- Aplicación desplegada: https://dengue-alerta-temprana-production.up.railway.app
 - Dataset: los CSV de entrada están en [`data/`](data/) (ver su propio
   [README](data/README.md)); el origen de los datos es SIVIGILA (INS), Google Earth
   Engine (TerraClimate para temperatura, CHIRPS para precipitación) y NOAA (índice ONI).
@@ -168,16 +168,3 @@ alerta = modelo.predict(X[meta['variables']]) >= meta['umbral_decision']
 **Montería (23001): el canal endémico no funciona.** Los casos pasan de 388 (2012) a 4.880 (2025). Con la regla "año epidémico = más de 2 × la mediana histórica" casi todos los años cuentan como epidémicos; desde 2022 no quedan 4 años de referencia, no hay umbral y no hay etiqueta (test vacío). En menor medida pasa en Ocaña, Cali, Tuluá y Aguachica.
 
 Limitaciones: el canal se calibró en Ibagué y falla con tendencias crecientes; el criterio de municipios estables usa toda la serie 2007–2025; el backtest usa datos consolidados (sin retraso de notificación); el umbral por F1 premia la inercia de los brotes.
-
-## Estado del proyecto
-
-- [x] Pipeline de datos y canal endémico (Ibagué).
-- [x] Comparación de 3 modelos sobre datos reales (Ibagué): regresión logística,
-  XGBoost, binomial negativa.
-- [x] Interfaz de usuario y Dockerfile.
-- [x] Red neuronal recurrente como cuarto modelo (jerarquía de complejidad avanzada):
-  GRU, LSTM de 2 capas y TCN contra LightGBM en 39 municipios (notebook 05). No están en la app.
-- [x] Réplica a Villavicencio y Montería (notebook 06). Villavicencio ya está en la app
-  (`data/*_50001.csv` y `models/50001/`, entrenado con `scripts/train_and_export.py`). Montería
-  no: el canal endémico no da etiqueta desde 2022 y no queda conjunto de prueba.
-- [ ] Despliegue en AWS con URL pública.
