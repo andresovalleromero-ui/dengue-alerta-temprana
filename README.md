@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 ### 3. (Opcional) Reentrenar los modelos
 
-Los modelos de Ibagué ya vienen entrenados en `models/73001/`. Para reentrenarlos (o
+Los modelos de Ibagué y Villavicencio ya vienen entrenados en `models/73001/` y `models/50001/`. Para reentrenarlos (o
 entrenar un municipio nuevo una vez tenga sus datos en `data/`):
 
 ```bash
@@ -163,7 +163,7 @@ modelo = lgb.Booster(model_file='models_global/lightgbm/lightgbm_global_final.tx
 alerta = modelo.predict(X[meta['variables']]) >= meta['umbral_decision']
 ```
 
-**Villavicencio (50001)**, notebook 03 con clima local, test 2023–2025 (36 meses, 5 inicios): XGBoost y binomial negativa F1 0,92 y 5 de 5 inicios; persistencia 0,82; logística 0,65; MLP 0,75. El LightGBM global sin clima local da lo mismo en esos meses (F1 0,92, 5 de 5): **el clima local no agrega** sobre la dinámica de los casos. Tablas en `resultados/locales/`.
+**Villavicencio (50001)**, notebook 03 con clima local, test 2023–2025 (36 meses, 5 inicios): XGBoost y binomial negativa F1 0,92 y 5 de 5 inicios; persistencia 0,82; logística 0,65; MLP 0,75. El LightGBM global sin clima local da lo mismo en esos meses (F1 0,92, 5 de 5): **el clima local no agrega** sobre la dinámica de los casos. Tablas en `resultados/locales/`; los modelos que usa la app están en `models/50001/` (mismas métricas de test).
 
 **Montería (23001): el canal endémico no funciona.** Los casos pasan de 388 (2012) a 4.880 (2025). Con la regla "año epidémico = más de 2 × la mediana histórica" casi todos los años cuentan como epidémicos; desde 2022 no quedan 4 años de referencia, no hay umbral y no hay etiqueta (test vacío). En menor medida pasa en Ocaña, Cali, Tuluá y Aguachica.
 
@@ -177,7 +177,7 @@ Limitaciones: el canal se calibró en Ibagué y falla con tendencias crecientes;
 - [x] Interfaz de usuario y Dockerfile.
 - [x] Red neuronal recurrente como cuarto modelo (jerarquía de complejidad avanzada):
   GRU, LSTM de 2 capas y TCN contra LightGBM en 39 municipios (notebook 05). No están en la app.
-- [x] Réplica a Villavicencio y Montería (notebook 06). En Montería el canal endémico no da
-  etiqueta desde 2022. Falta llevar Villavicencio a la app (`data/` y `models/50001/` con
-  `scripts/train_and_export.py`).
+- [x] Réplica a Villavicencio y Montería (notebook 06). Villavicencio ya está en la app
+  (`data/*_50001.csv` y `models/50001/`, entrenado con `scripts/train_and_export.py`). Montería
+  no: el canal endémico no da etiqueta desde 2022 y no queda conjunto de prueba.
 - [ ] Despliegue en AWS con URL pública.
