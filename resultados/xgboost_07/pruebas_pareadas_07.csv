@@ -1,0 +1,6 @@
+A,B,dif_F1,F1_IC_inf,F1_IC_sup,dif_PR-AUC,PRAUC_IC_inf,PRAUC_IC_sup,Brier_mejor_en_A,p_Wilcoxon_Brier,PRAUC_mejor_en_A,p_Wilcoxon_PRAUC,p_Holm_Brier,p_Holm_PRAUC
+XGBoost global,LightGBM global,-0.0095,-0.0223,0.0039,-0.008,-0.015,-0.0013,0.4491,0.0001,0.2415,0.5651,0.0001,0.5651
+XGBoost global,GRU global (1 capa),-0.0151,-0.0311,0.0004,-0.0258,-0.0379,-0.0146,0.4413,0.0001,0.285,0.2365,0.0001,0.4729
+XGBoost global,Binomial negativa local,0.0073,-0.013,0.029,-0.015,-0.0342,0.0048,0.376,0.0,0.2609,0.0001,0.0,0.0002
+XGBoost global,Persistencia,0.0047,-0.0149,0.0233,0.204,0.1824,0.2246,0.483,0.0,0.9614,0.0,0.0,0.0
+LightGBM global,Persistencia,0.0142,-0.0046,0.0314,0.212,0.1901,0.2342,0.5065,0.0,0.9517,0.0,0.0,0.0

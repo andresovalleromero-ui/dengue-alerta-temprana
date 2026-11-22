@@ -1,0 +1,13 @@
+{
+  "decision": "LightGBM global",
+  "lightgbm": {
+    "num_leaves": 7,
+    "arboles": 221,
+    "umbral": 0.42500000000000004
+  },
+  "xgboost": {
+    "max_depth": 3,
+    "arboles": 281,
+    "umbral": 0.45
+  }
+}
