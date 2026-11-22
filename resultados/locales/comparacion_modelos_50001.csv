@@ -1,0 +1,11 @@
+modelo,conjunto,recall,precision,f1,pr_auc,recall_inicios,n_inicios
+Persistencia,val,0.67,0.67,0.67,,0.0,4.0
+Persistencia,test,0.8,0.83,0.82,,0.0,5.0
+Logística,val,0.67,0.8,0.73,0.83,0.0,4.0
+Logística,test,0.48,1.0,0.65,0.97,0.0,5.0
+XGBoost,val,0.83,0.77,0.8,0.86,0.5,4.0
+XGBoost,test,0.96,0.89,0.92,0.99,1.0,5.0
+Binomial negativa,val,1.0,0.8,0.89,0.96,1.0,4.0
+Binomial negativa,test,0.88,0.96,0.92,0.98,1.0,5.0
+Red neuronal (MLP),val,0.67,0.89,0.76,0.82,0.0,4.0
+Red neuronal (MLP),test,0.6,1.0,0.75,0.96,0.0,5.0

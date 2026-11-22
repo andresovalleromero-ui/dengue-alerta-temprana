@@ -1,0 +1,25 @@
+modelo,variables,conjunto,n_vars,f1,pr_auc,recall,precision,recall_inicios
+Logística,Completo,val,16,0.73,0.83,0.67,0.8,0.0
+Logística,Completo,test,16,0.65,0.97,0.48,1.0,0.0
+Logística,Sin clima local,val,8,0.74,0.87,0.83,0.67,0.5
+Logística,Sin clima local,test,8,0.94,0.99,1.0,0.89,1.0
+Logística,Sin clima,val,7,0.87,0.92,0.83,0.91,0.5
+Logística,Sin clima,test,7,0.72,0.98,0.56,1.0,0.4
+XGBoost,Completo,val,16,0.8,0.86,0.83,0.77,0.5
+XGBoost,Completo,test,16,0.92,0.99,0.96,0.89,1.0
+XGBoost,Sin clima local,val,8,0.79,0.89,0.92,0.69,0.75
+XGBoost,Sin clima local,test,8,0.89,0.98,1.0,0.81,1.0
+XGBoost,Sin clima,val,7,0.77,0.89,0.83,0.71,0.5
+XGBoost,Sin clima,test,7,0.89,0.98,0.96,0.83,1.0
+Binomial negativa,Completo,val,16,0.89,0.96,1.0,0.8,1.0
+Binomial negativa,Completo,test,16,0.92,0.98,0.88,0.96,1.0
+Binomial negativa,Sin clima local,val,8,0.89,0.97,1.0,0.8,1.0
+Binomial negativa,Sin clima local,test,8,0.92,0.99,0.92,0.92,1.0
+Binomial negativa,Sin clima,val,7,0.87,0.96,0.83,0.91,0.5
+Binomial negativa,Sin clima,test,7,0.81,0.98,0.68,1.0,0.8
+Red neuronal (MLP),Completo,val,16,0.76,0.82,0.67,0.89,0.0
+Red neuronal (MLP),Completo,test,16,0.75,0.96,0.6,1.0,0.0
+Red neuronal (MLP),Sin clima local,val,8,0.76,0.87,0.67,0.89,0.0
+Red neuronal (MLP),Sin clima local,test,8,0.88,0.97,0.84,0.91,0.2
+Red neuronal (MLP),Sin clima,val,7,0.87,0.93,0.83,0.91,0.5
+Red neuronal (MLP),Sin clima,test,7,0.89,0.97,0.84,0.95,1.0
