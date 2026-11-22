@@ -101,9 +101,12 @@ col_izq, col_der = st.columns([1, 2], gap="large")
 
 with col_izq:
     st.subheader("1. Elige municipio y mes")
+    opciones = list(municipios.keys())
+    default = CFG["app"]["municipio_default"]
     cod_mun = st.selectbox(
         "Municipio",
-        options=list(municipios.keys()),
+        options=opciones,
+        index=opciones.index(default) if default in opciones else 0,
         format_func=lambda c: municipios[c],
         help="Lista de municipios para los que ya hay un modelo entrenado.",
     )
