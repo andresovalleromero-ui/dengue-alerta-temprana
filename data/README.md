@@ -20,4 +20,4 @@ otro municipio).
 La aplicación lee estos archivos directamente (no se conecta en vivo a SIVIGILA ni a
 Google Earth Engine), así que solo puede predecir sobre los meses que ya estén aquí.
 
-Cali (`76001`) y Montería (`23001`) solo tienen `serie_nivel2`: los usa el notebook `09_figuras_documento` para las figuras del documento final; no están en la aplicación.
+Montería (`23001`) solo tiene `serie_nivel2`: la usa el notebook `09_figuras_documento` para las figuras del documento final; no está en la aplicación porque no tiene etiqueta desde 2022. Cali (`76001`) sí está en la aplicación, con resultados provisionales por el clima.
