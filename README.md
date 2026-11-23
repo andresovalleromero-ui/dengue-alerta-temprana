@@ -12,7 +12,7 @@ criaderos, preparación hospitalaria).
 El problema se plantea como una clasificación binaria mensual (exceso / no exceso), en dos niveles:
 
 - **Por municipio:** Ibagué (2012–2025) como caso base, replicado en Villavicencio y Cali. Entradas: clima local (lluvia, temperatura), el índice ONI (El Niño / La Niña) y los casos de los 4 meses anteriores. Se compararon persistencia, regresión logística, XGBoost, binomial negativa y una red neuronal simple (MLP), evaluados en un periodo de prueba que nunca vieron al entrenar (2023–2025; en Cali, 2023–2024). Montería no se pudo evaluar: su canal endémico no da etiqueta desde 2022. Los resultados de Cali son provisionales porque el clima extraído para Cali no es representativo.
-- **Panel de 39 municipios:** un modelo global de Machine Learning (LightGBM) comparado con redes neuronales (GRU, LSTM y TCN), con ONI y casos pero sin clima local, validado año por año de 2016 a 2025. Detalle en la sección "Comparación ML vs Deep Learning en 39 municipios".
+- **Panel de 39 municipios (anexo):** un modelo global de Machine Learning (LightGBM) comparado con redes neuronales (GRU, LSTM y TCN), con ONI y casos pero sin clima local, validado año por año de 2016 a 2025. Análisis complementario; detalle en el anexo.
 
 La aplicación (`app/main.py`, Streamlit) muestra Ibagué y Villavicencio: para cualquier mes ya disponible en los datos históricos, qué hubiera predicho cada modelo local (regresión logística, XGBoost y binomial negativa), junto con las gráficas de casos y clima de ese periodo.
 
@@ -103,7 +103,7 @@ docker run -p 8501:8501 -e MUNICIPIO_DEFAULT=50001 dengue-alerta-temprana
 
 ```
 notebooks/   — pipeline (01–03), comparación ML vs DL en 39 municipios (05) y réplica a
-               Villavicencio y Montería (06), modelo final LightGBM (07) y Cali (08); ver notebooks/README.md
+               Villavicencio y Montería (06), modelo global LightGBM (07) y Cali (08); ver notebooks/README.md
 src/         — pipeline de modelado reutilizable (pipeline.py) y configuración (config.py)
 scripts/     — entrenamiento y exportación de modelos (train_and_export.py)
 app/         — interfaz de usuario (Streamlit, main.py)
@@ -115,13 +115,32 @@ config.yaml  — parámetros ajustables sin tocar el código
 Dockerfile   — empaqueta todo lo anterior para desplegarlo igual en cualquier entorno
 ```
 
-## Comparación ML vs Deep Learning en 39 municipios (notebook 05)
+## Resultados por municipio (notebooks 03, 06 y 08)
 
-Panel de 39 municipios con canal endémico estable, mensual, con ONI y sin clima local. Validación año por año (2016–2025), cada modelo entrenado solo con datos anteriores: 4.507 meses de prueba y 335 inicios de brote. Resultados en `resultados/global_05/`.
+F1 en la prueba 2023–2025 (Cali: 2023–2024), con clima local:
+
+| Modelo | Ibagué | Villavicencio | Cali* |
+|---|---|---|---|
+| Persistencia | 0,89 | 0,82 | 0,93 |
+| Regresión logística | 0,80 | 0,65 | 0,95 |
+| **XGBoost (modelo final)** | **0,78** | **0,92** | **0,87** |
+| Binomial negativa | 0,92 | 0,92 | 0,92 |
+| MLP | 0,76 | 0,75 | 0,93 |
+| Inicios de brote en la prueba | 2 | 5 | 2 |
+
+**Modelo final: XGBoost**, el definido en la propuesta. Con 2 a 5 inicios de brote por municipio las diferencias entre modelos no son concluyentes, así que se mantiene el modelo declarado de antemano. Cumple la meta de sensibilidad (≥ 0,80) en los tres municipios, en validación y en prueba, y anticipa tantos inicios de brote como la binomial negativa (14 de 19). En Ibagué la persistencia lo supera en la prueba por los brotes prolongados de 2023–2025. La app usa los modelos de Ibagué y Villavicencio (`models/`); tablas en `resultados/locales/`.
+
+\* Cali es provisional: 21 de 24 meses en exceso (alertar siempre ya da F1 0,93) y el clima extraído no es representativo (6.000–8.000 mm/año y 19,6 °C, frente a 1.850 mm/año y 24,2 °C según la Alcaldía).
+
+**Limitaciones:** el canal endémico se calibró en Ibagué y falla con tendencias crecientes: en Montería (388 casos en 2012, 4.880 en 2025) casi todos los años cuentan como epidémicos y desde 2022 no hay umbral, así que no se pudo evaluar. La validación usa datos consolidados, sin el retraso de notificación. El umbral elegido por F1 favorece la inercia de los brotes.
+
+## Anexo: comparación ML vs Deep Learning en 39 municipios (notebook 05)
+
+Análisis complementario. Como las pruebas por municipio tienen pocos brotes, la comparación se repitió en un panel de 39 municipios con canal endémico estable (mensual, con ONI, sin clima local), validado año por año de 2016 a 2025: 4.507 meses de prueba y 335 inicios de brote. Resultados en `resultados/global_05/`.
 
 | Modelo | F1 | PR-AUC | Inicios anticipados | Falsas alarmas* |
 |---|---|---|---|---|
-| Persistencia (referencia) | 0,742 | 0,625 | 0 % | 10,8 % |
+| Persistencia | 0,742 | 0,625 | 0 % | 10,8 % |
 | LightGBM (ML) | 0,756 | 0,837 | 46,6 % | 15,5 % |
 | GRU (1 capa) | 0,762 | 0,855 | 36,7 % | 12,4 % |
 | LSTM (2 capas) | 0,748 | 0,824 | 47,5 % | 17,1 % |
@@ -129,28 +148,4 @@ Panel de 39 municipios con canal endémico estable, mensual, con ONI y sin clima
 
 \* Meses sin exceso en los que el modelo emite alerta.
 
-- La mejor red (GRU) queda apenas por encima de LightGBM (F1 +0,006; PR-AUC +0,018). La diferencia no es significativa en la prueba por municipio-año (p ajustado 0,33). Más capas (LSTM, TCN) no mejoran.
-- Frente a la persistencia el F1 casi no cambia; la ganancia está en la PR-AUC (+0,21) y en anticipar inicios de brote (37–48 % contra 0 %), a cambio de más falsas alarmas.
-- Se elige LightGBM: rinde como las redes, entrena en segundos y se puede explicar por variable.
-
-Las conclusiones se mantienen sin 2020–2022 y sin 2025.
-
-### Modelos por municipio (notebooks 03, 06 y 08)
-
-F1 en la prueba 2023–2025, con clima local. El LightGBM global, sin clima local, evaluado en los mismos meses:
-
-| Modelo | Ibagué | Villavicencio | Cali* |
-|---|---|---|---|
-| Persistencia | 0,89 | 0,82 | 0,93 |
-| Regresión logística | 0,80 | 0,65 | 0,95 |
-| XGBoost | 0,78 | 0,92 | 0,87 |
-| Binomial negativa | 0,92 | 0,92 | 0,92 |
-| MLP | 0,76 | 0,75 | 0,93 |
-| **LightGBM global** | **0,92** | **0,92** | **0,95** |
-| Inicios de brote en la prueba | 2 | 5 | 2 |
-
-El modelo global iguala al mejor modelo de cada municipio sin usar clima local. Con 2 a 5 inicios de brote por municipio, estas pruebas no alcanzan para elegir modelo; para eso está el panel de 39 municipios. La app usa los modelos locales de Ibagué y Villavicencio (`models/`). Tablas en `resultados/locales/`.
-
-\* Cali es provisional: prueba 2023–2024 con 21 de 24 meses en exceso (alertar siempre ya da F1 0,93), y el clima extraído de Google Earth Engine no es representativo (6.000–8.000 mm/año y 19,6 °C, frente a 1.850 mm/año y 24,2 °C según la Alcaldía).
-
-**Limitaciones:** el desempeño varía entre municipios (F1 del modelo global de 0,49 a 0,94). El canal endémico se calibró en Ibagué y falla con tendencias crecientes: en Montería los casos pasan de 388 (2012) a 4.880 (2025), casi todos los años cuentan como epidémicos y desde 2022 no hay umbral. El criterio de municipios estables usa toda la serie 2007–2025. La validación usa datos consolidados, sin el retraso de notificación. El umbral elegido por F1 favorece la inercia de los brotes.
+Las redes no superan al ML: la mejor (GRU) queda apenas por encima de LightGBM (F1 +0,006), sin diferencia significativa por municipio-año (p ajustado 0,33). XGBoost en el mismo panel queda casi igual (F1 0,747). El modelo global, sin clima local, iguala al mejor modelo de cada municipio en los mismos meses (F1 0,92 en Ibagué y Villavicencio, 0,95 en Cali), aunque su desempeño varía entre municipios (F1 de 0,49 a 0,94). Modelo entrenado en `models_global/lightgbm/` (`notebooks/07_lightgbm_final.ipynb`); no lo usa la app.
