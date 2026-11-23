@@ -115,54 +115,42 @@ config.yaml  — parámetros ajustables sin tocar el código
 Dockerfile   — empaqueta todo lo anterior para desplegarlo igual en cualquier entorno
 ```
 
-## Comparación ML vs Deep Learning en 39 municipios (notebooks 05 y 06)
+## Comparación ML vs Deep Learning en 39 municipios (notebook 05)
 
-Para saber si un modelo de Deep Learning le gana al mejor modelo de ML se armó un panel de **39 municipios** con canal endémico estable (menos del 20 % de los meses con menos de 5 casos), mensual, con ONI y sin clima local. Validación con ventana creciente: un pliegue por año de 2016 a 2025, cada modelo entrenado solo con datos anteriores. 4.507 meses de prueba y 335 inicios de brote. Las métricas se recalcularon desde las predicciones guardadas (sección 8 del 06) y están en `resultados/global_05/`.
+Panel de 39 municipios con canal endémico estable, mensual, con ONI y sin clima local. Validación año por año (2016–2025), cada modelo entrenado solo con datos anteriores: 4.507 meses de prueba y 335 inicios de brote. Resultados en `resultados/global_05/`.
 
-| Modelo | F1 | PR-AUC | Inicios anticipados | Falsas alarmas* | Brier |
-|---|---|---|---|---|---|
-| Persistencia | 0,742 | 0,625 | 0 % | 10,8 % | 0,151 |
-| Binomial negativa local | 0,739 | 0,844 | 52,2 % | 16,4 % | 0,100 |
-| LightGBM global | 0,756 | 0,837 | 46,6 % | 15,5 % | 0,104 |
-| GRU global (1 capa) | 0,762 | 0,855 | 36,7 % | 12,4 % | 0,102 |
-| LSTM global (2 capas) | 0,748 | 0,824 | 47,5 % | 17,1 % | 0,112 |
-| TCN global | 0,757 | 0,842 | 40,0 % | 15,5 % | 0,105 |
+| Modelo | F1 | PR-AUC | Inicios anticipados | Falsas alarmas* |
+|---|---|---|---|---|
+| Persistencia (referencia) | 0,742 | 0,625 | 0 % | 10,8 % |
+| LightGBM (ML) | 0,756 | 0,837 | 46,6 % | 15,5 % |
+| GRU (1 capa) | 0,762 | 0,855 | 36,7 % | 12,4 % |
+| LSTM (2 capas) | 0,748 | 0,824 | 47,5 % | 17,1 % |
+| TCN | 0,757 | 0,842 | 40,0 % | 15,5 % |
 
-\* Proporción de meses sin exceso en los que el modelo emite alerta.
+\* Meses sin exceso en los que el modelo emite alerta.
 
-Pruebas pareadas (bootstrap por bloques municipio-año, 2.000 réplicas; Wilcoxon por municipio-año con p ajustado por Holm):
-
-| Comparación | Dif. F1 (IC 95 %) | Dif. PR-AUC (IC 95 %) | p Holm PR-AUC |
-|---|---|---|---|
-| LightGBM − GRU | −0,006 (−0,018 a 0,007) | −0,018 (−0,028 a −0,008) | 0,33 |
-| LSTM 2 capas − GRU | −0,014 (−0,028 a 0,000) | −0,030 (−0,039 a −0,023) | < 0,001 |
-| TCN − GRU | −0,005 (−0,017 a 0,007) | −0,013 (−0,020 a −0,006) | < 0,001 |
-| LightGBM − Persistencia | +0,014 (−0,005 a 0,031) | +0,212 (0,190 a 0,234) | < 0,001 |
-| GRU − Persistencia | +0,020 (0,003 a 0,035) | +0,230 (0,208 a 0,253) | < 0,001 |
-
-Lectura:
-
-1. **Más profundidad no ayuda:** la LSTM de 2 capas y la TCN quedan por debajo de la GRU de 1 capa.
-2. **GRU y LightGBM empatan en F1.** La GRU tiene 0,018 más de PR-AUC y gana en 27 de 39 municipios, pero la diferencia por municipio-año no es significativa (p Holm 0,33).
-3. **Frente a la persistencia** el F1 casi no cambia; la ganancia está en la PR-AUC (+0,21 a +0,23) y en anticipar inicios de brote (37–52 % contra 0 %), a cambio de más falsas alarmas.
-4. **La binomial negativa local da mejores probabilidades** (Brier mejor que LightGBM en ~60 % de los municipio-años, p Holm 0,011).
+- La mejor red (GRU) queda apenas por encima de LightGBM (F1 +0,006; PR-AUC +0,018). La diferencia no es significativa en la prueba por municipio-año (p ajustado 0,33). Más capas (LSTM, TCN) no mejoran.
+- Frente a la persistencia el F1 casi no cambia; la ganancia está en la PR-AUC (+0,21) y en anticipar inicios de brote (37–48 % contra 0 %), a cambio de más falsas alarmas.
+- Se elige LightGBM: rinde como las redes, entrena en segundos y se puede explicar por variable.
 
 Las conclusiones se mantienen sin 2020–2022 y sin 2025.
 
-**Modelo global entrenado (`models_global/lightgbm/`).** LightGBM reentrenado con todos los datos (39 municipios, 2012–2025, 6.045 filas) y el código del 05 (`notebooks/07_lightgbm_final.ipynb` lo reproduce byte a byte). Se eligió sobre la GRU porque empatan en F1, la ventaja de la GRU no es significativa y LightGBM entrena en segundos y se explica por variable. `num_leaves` = 7 (moda de los pliegues), 221 árboles y umbral de alerta 0,425 (medianas); detalle en `metadata.json`. No tiene test propio: su desempeño esperado es el de la validación (F1 0,756, PR-AUC 0,837). La variable que más pesa es la de casos del mes origen relativos al umbral (`rel_0`). Todavía no está conectado a la app.
+### Modelos por municipio (notebooks 03, 06 y 08)
 
-```python
-import json, lightgbm as lgb
-meta = json.load(open('models_global/lightgbm/metadata.json'))
-modelo = lgb.Booster(model_file='models_global/lightgbm/lightgbm_global_final.txt')
-# X: tabla construida como en la sección 7 del 05 (origen = mes objetivo − 2), mun_id según meta['mun_id']
-alerta = modelo.predict(X[meta['variables']]) >= meta['umbral_decision']
-```
+F1 en la prueba 2023–2025, con clima local. El LightGBM global, sin clima local, evaluado en los mismos meses:
 
-**Villavicencio (50001)**, notebook 03 con clima local, test 2023–2025 (36 meses, 5 inicios): XGBoost y binomial negativa F1 0,92 y 5 de 5 inicios; persistencia 0,82; logística 0,65; MLP 0,75. El LightGBM global sin clima local da lo mismo en esos meses (F1 0,92, 5 de 5): **el clima local no agrega** sobre la dinámica de los casos. Tablas en `resultados/locales/`; los modelos que usa la app están en `models/50001/` (mismas métricas de test).
+| Modelo | Ibagué | Villavicencio | Cali* |
+|---|---|---|---|
+| Persistencia | 0,89 | 0,82 | 0,93 |
+| Regresión logística | 0,80 | 0,65 | 0,95 |
+| XGBoost | 0,78 | 0,92 | 0,87 |
+| Binomial negativa | 0,92 | 0,92 | 0,92 |
+| MLP | 0,76 | 0,75 | 0,93 |
+| **LightGBM global** | **0,92** | **0,92** | **0,95** |
+| Inicios de brote en la prueba | 2 | 5 | 2 |
 
-**Cali (76001)**, notebook 08 (mismo procedimiento que Villavicencio). Prueba 2023–2024: 24 meses, 21 en exceso y 2 inicios (2025 queda sin canal). Logística F1 0,95; persistencia 0,93; MLP 0,93 (2 de 2 inicios); binomial negativa 0,92 y XGBoost 0,87 (0 de 2). Alertar todos los meses ya da F1 0,93, así que esta prueba no separa modelos. En validación 2019–2022 (4 inicios) gana la binomial negativa (0,90) y XGBoost (0,84) supera a la persistencia (0,82). **Advertencia:** el clima de Cali extraído de GEE no es representativo (6.000–8.000 mm/año y 19,6 °C, frente a 1.850 mm/año y 24,2 °C según la Alcaldía): los resultados de Cali, sobre todo la comparación con y sin clima, son provisionales hasta volver a extraerlo. Tablas en `resultados/locales/`. Cali no está en la app.
+El modelo global iguala al mejor modelo de cada municipio sin usar clima local. Con 2 a 5 inicios de brote por municipio, estas pruebas no alcanzan para elegir modelo; para eso está el panel de 39 municipios. La app usa los modelos locales de Ibagué y Villavicencio (`models/`). Tablas en `resultados/locales/`.
 
-**Montería (23001): el canal endémico no funciona.** Los casos pasan de 388 (2012) a 4.880 (2025). Con la regla "año epidémico = más de 2 × la mediana histórica" casi todos los años cuentan como epidémicos; desde 2022 no quedan 4 años de referencia, no hay umbral y no hay etiqueta (test vacío). En menor medida pasa en Ocaña, Cali, Tuluá y Aguachica.
+\* Cali es provisional: prueba 2023–2024 con 21 de 24 meses en exceso (alertar siempre ya da F1 0,93), y el clima extraído de Google Earth Engine no es representativo (6.000–8.000 mm/año y 19,6 °C, frente a 1.850 mm/año y 24,2 °C según la Alcaldía).
 
-Limitaciones: el canal se calibró en Ibagué y falla con tendencias crecientes; el criterio de municipios estables usa toda la serie 2007–2025; el backtest usa datos consolidados (sin retraso de notificación); el umbral por F1 premia la inercia de los brotes.
+**Limitaciones:** el desempeño varía entre municipios (F1 del modelo global de 0,49 a 0,94). El canal endémico se calibró en Ibagué y falla con tendencias crecientes: en Montería los casos pasan de 388 (2012) a 4.880 (2025), casi todos los años cuentan como epidémicos y desde 2022 no hay umbral. El criterio de municipios estables usa toda la serie 2007–2025. La validación usa datos consolidados, sin el retraso de notificación. El umbral elegido por F1 favorece la inercia de los brotes.
