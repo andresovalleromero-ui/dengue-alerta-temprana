@@ -14,7 +14,7 @@ El problema se plantea como una clasificación binaria mensual (exceso / no exce
 - **Por municipio:** Ibagué (2012–2025) como caso base, replicado en Villavicencio y Cali. Entradas: clima local (lluvia, temperatura), el índice ONI (El Niño / La Niña) y los casos de los 4 meses anteriores. Se compararon persistencia, regresión logística, XGBoost, binomial negativa y una red neuronal simple (MLP), evaluados en un periodo de prueba que nunca vieron al entrenar (2023–2025; en Cali, 2023–2024). Montería no se pudo evaluar: su canal endémico no da etiqueta desde 2022. Los resultados de Cali son provisionales porque el clima extraído para Cali no es representativo.
 - **Panel de 39 municipios (anexo):** un modelo global de Machine Learning (LightGBM) comparado con redes neuronales (GRU, LSTM y TCN), con ONI y casos pero sin clima local, validado año por año de 2016 a 2025. Análisis complementario; detalle en el anexo.
 
-La aplicación (`app/main.py`, Streamlit) muestra Ibagué y Villavicencio: para cualquier mes ya disponible en los datos históricos, qué hubiera predicho cada modelo local (regresión logística, XGBoost y binomial negativa), junto con las gráficas de casos y clima de ese periodo.
+La aplicación (`app/main.py`, Streamlit) muestra Ibagué, Villavicencio y Cali (Cali, provisional): para cualquier mes ya disponible en los datos históricos, qué hubiera predicho cada modelo local (regresión logística, XGBoost y binomial negativa), junto con las gráficas de casos y clima de ese periodo.
 
 
 ## Enlaces
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ### 3. (Opcional) Reentrenar los modelos
 
-Los modelos de Ibagué y Villavicencio ya vienen entrenados en `models/73001/` y `models/50001/`. Para reentrenarlos (o
+Los modelos de Ibagué, Villavicencio y Cali ya vienen entrenados en `models/73001/`, `models/50001/` y `models/76001/`. Para reentrenarlos (o
 entrenar un municipio nuevo una vez tenga sus datos en `data/`):
 
 ```bash
