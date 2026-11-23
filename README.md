@@ -9,17 +9,13 @@ respecto a su comportamiento histórico (su "canal endémico"), para que esa ven
 tiempo se pueda aprovechar en la respuesta institucional (fumigación, eliminación de
 criaderos, preparación hospitalaria).
 
-El problema se plantea como una clasificación binaria mensual (exceso / no exceso),
-usando como entrada clima (lluvia, temperatura), el índice climático ONI (El Niño /
-La Niña) y la propia historia de casos de los 4 meses anteriores. Se compararon tres
-modelos — regresión logística, XGBoost y binomial negativa — sobre datos mensuales de
-Ibagué (2012–2025), evaluados siempre en un conjunto de prueba que nunca vieron
-durante el entrenamiento (2023–2025). La comparación con redes recurrentes en 39 municipios y la réplica a
-Villavicencio y Montería están en la sección "Comparación ML vs Deep Learning en 39 municipios".
+El problema se plantea como una clasificación binaria mensual (exceso / no exceso), en dos niveles:
 
-La aplicación (`app/main.py`, Streamlit) deja ver, para cualquier mes ya disponible en
-los datos históricos, qué hubiera predicho cada modelo, junto con las gráficas de
-casos y clima de ese periodo.
+- **Por municipio:** Ibagué (2012–2025) como caso base, replicado en Villavicencio y Cali. Entradas: clima local (lluvia, temperatura), el índice ONI (El Niño / La Niña) y los casos de los 4 meses anteriores. Se compararon persistencia, regresión logística, XGBoost, binomial negativa y una red neuronal simple (MLP), evaluados en un periodo de prueba que nunca vieron al entrenar (2023–2025; en Cali, 2023–2024). Montería no se pudo evaluar: su canal endémico no da etiqueta desde 2022. Los resultados de Cali son provisionales porque el clima extraído para Cali no es representativo.
+- **Panel de 39 municipios:** un modelo global de Machine Learning (LightGBM) comparado con redes neuronales (GRU, LSTM y TCN), con ONI y casos pero sin clima local, validado año por año de 2016 a 2025. Detalle en la sección "Comparación ML vs Deep Learning en 39 municipios".
+
+La aplicación (`app/main.py`, Streamlit) muestra Ibagué y Villavicencio: para cualquier mes ya disponible en los datos históricos, qué hubiera predicho cada modelo local (regresión logística, XGBoost y binomial negativa), junto con las gráficas de casos y clima de ese periodo.
+
 
 ## Enlaces
 
