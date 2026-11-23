@@ -107,14 +107,14 @@ docker run -p 8501:8501 -e MUNICIPIO_DEFAULT=50001 dengue-alerta-temprana
 
 ```
 notebooks/   — pipeline (01–03), comparación ML vs DL en 39 municipios (05) y réplica a
-               Villavicencio y Montería (06); ver notebooks/README.md
+               Villavicencio y Montería (06), modelo final LightGBM (07) y Cali (08); ver notebooks/README.md
 src/         — pipeline de modelado reutilizable (pipeline.py) y configuración (config.py)
 scripts/     — entrenamiento y exportación de modelos (train_and_export.py)
 app/         — interfaz de usuario (Streamlit, main.py)
 data/        — CSV de entrada por municipio (ver su README)
 models/      — modelos entrenados, serializados, por municipio (los que usa la app)
 models_global/ — modelo global LightGBM de 39 municipios (no lo usa la app)
-resultados/  — predicciones y métricas de los notebooks 05 y 06
+resultados/  — predicciones y métricas de los notebooks 05, 06 y 08
 config.yaml  — parámetros ajustables sin tocar el código
 Dockerfile   — empaqueta todo lo anterior para desplegarlo igual en cualquier entorno
 ```
@@ -153,7 +153,7 @@ Lectura:
 
 Las conclusiones se mantienen sin 2020–2022 y sin 2025.
 
-**Modelo global entrenado (`models_global/lightgbm/`).** LightGBM reentrenado con todos los datos (39 municipios, 2012–2025, 6.045 filas) y el código del 05. Se eligió sobre la GRU porque empatan en F1, la ventaja de la GRU no es significativa y LightGBM entrena en segundos y se explica por variable. `num_leaves` = 7 (moda de los pliegues), 221 árboles y umbral de alerta 0,425 (medianas); detalle en `metadata.json`. No tiene test propio: su desempeño esperado es el de la validación (F1 0,756, PR-AUC 0,837). La variable que más pesa es la de casos del mes origen relativos al umbral (`rel_0`). Todavía no está conectado a la app.
+**Modelo global entrenado (`models_global/lightgbm/`).** LightGBM reentrenado con todos los datos (39 municipios, 2012–2025, 6.045 filas) y el código del 05 (`notebooks/07_lightgbm_final.ipynb` lo reproduce byte a byte). Se eligió sobre la GRU porque empatan en F1, la ventaja de la GRU no es significativa y LightGBM entrena en segundos y se explica por variable. `num_leaves` = 7 (moda de los pliegues), 221 árboles y umbral de alerta 0,425 (medianas); detalle en `metadata.json`. No tiene test propio: su desempeño esperado es el de la validación (F1 0,756, PR-AUC 0,837). La variable que más pesa es la de casos del mes origen relativos al umbral (`rel_0`). Todavía no está conectado a la app.
 
 ```python
 import json, lightgbm as lgb
@@ -164,6 +164,8 @@ alerta = modelo.predict(X[meta['variables']]) >= meta['umbral_decision']
 ```
 
 **Villavicencio (50001)**, notebook 03 con clima local, test 2023–2025 (36 meses, 5 inicios): XGBoost y binomial negativa F1 0,92 y 5 de 5 inicios; persistencia 0,82; logística 0,65; MLP 0,75. El LightGBM global sin clima local da lo mismo en esos meses (F1 0,92, 5 de 5): **el clima local no agrega** sobre la dinámica de los casos. Tablas en `resultados/locales/`; los modelos que usa la app están en `models/50001/` (mismas métricas de test).
+
+**Cali (76001)**, notebook 08 (mismo procedimiento que Villavicencio). Prueba 2023–2024: 24 meses, 21 en exceso y 2 inicios (2025 queda sin canal). Logística F1 0,95; persistencia 0,93; MLP 0,93 (2 de 2 inicios); binomial negativa 0,92 y XGBoost 0,87 (0 de 2). Alertar todos los meses ya da F1 0,93, así que esta prueba no separa modelos. En validación 2019–2022 (4 inicios) gana la binomial negativa (0,90) y XGBoost (0,84) supera a la persistencia (0,82). **Advertencia:** el clima de Cali extraído de GEE no es representativo (6.000–8.000 mm/año y 19,6 °C, frente a 1.850 mm/año y 24,2 °C según la Alcaldía): los resultados de Cali, sobre todo la comparación con y sin clima, son provisionales hasta volver a extraerlo. Tablas en `resultados/locales/`. Cali no está en la app.
 
 **Montería (23001): el canal endémico no funciona.** Los casos pasan de 388 (2012) a 4.880 (2025). Con la regla "año epidémico = más de 2 × la mediana histórica" casi todos los años cuentan como epidémicos; desde 2022 no quedan 4 años de referencia, no hay umbral y no hay etiqueta (test vacío). En menor medida pasa en Ocaña, Cali, Tuluá y Aguachica.
 
