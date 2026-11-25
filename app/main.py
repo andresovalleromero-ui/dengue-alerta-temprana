@@ -29,7 +29,52 @@ RUTA_MODELOS = CFG["rutas"]["modelos"]
 NOMBRES_MUNICIPIO = CFG["municipios"]
 ARCHIVO_DE_MODELO = CFG["modelos_archivo"]
 
+ASSETS = Path(__file__).resolve().parent / "assets"
+LOGO_UNIANDES = ASSETS / "logo_uniandes.png"
+LOGO_MAIA = ASSETS / "logo_maia.png"
+IMG_MOSQUITO = ASSETS / "mosquito.jpg"
+
 st.set_page_config(page_title=CFG["app"]["titulo"], layout="wide")
+
+# ---------------------------------------------------------------------------
+# Estilos
+# ---------------------------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    .app-hero {
+        background: linear-gradient(90deg, #00263A 0%, #00496B 55%, #2E7D63 100%);
+        padding: 1.4rem 1.8rem;
+        border-radius: 14px;
+        margin-bottom: 1.1rem;
+    }
+    .app-hero h1 {
+        color: #FFFFFF !important;
+        font-size: 2.0rem;
+        font-weight: 700;
+        margin: 0 0 .35rem 0;
+        line-height: 1.2;
+    }
+    .app-hero p {
+        color: #DCEFE6;
+        font-size: 0.98rem;
+        margin: 0;
+    }
+    h2, h3 {
+        color: #00394F;
+        border-left: 5px solid #2E7D63;
+        padding-left: 0.6rem;
+    }
+    .credito-foto {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-align: center;
+        margin-top: -0.6rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 def municipios_disponibles() -> dict:
@@ -80,15 +125,79 @@ def predecir(nombre_modelo: str, modelo, fila: pd.Series, predictores: list[str]
 
 
 # ---------------------------------------------------------------------------
-# Interfaz
+# Encabezado (logos + título)
 # ---------------------------------------------------------------------------
+col_logo_izq, col_hero, col_logo_der = st.columns([1, 5, 1], vertical_alignment="center")
 
-st.title(CFG["app"]["titulo"])
-st.caption(
-    "Proyecto final MAIA (Universidad de los Andes, grupo BIOMAC) — predicción de "
-    "exceso de casos de dengue con 2 meses de anticipación respecto al canal endémico."
-)
+with col_logo_izq:
+    if LOGO_UNIANDES.exists():
+        st.image(str(LOGO_UNIANDES), use_container_width=True)
 
+with col_hero:
+    st.markdown(
+        f"""
+        <div class="app-hero">
+            <h1>{CFG["app"]["titulo"]}</h1>
+            <p>Proyecto final MAIA (Universidad de los Andes, grupo BIOMAC) — predicción de
+            exceso de casos de dengue con 2 meses de anticipación respecto al canal endémico.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with col_logo_der:
+    if LOGO_MAIA.exists():
+        st.image(str(LOGO_MAIA), use_container_width=True)
+
+# ---------------------------------------------------------------------------
+# Panel plegable de instrucciones
+# ---------------------------------------------------------------------------
+with st.expander("📖 Cómo leer esta interfaz (haz clic para desplegar)", expanded=False):
+    st.markdown(
+        """
+Esta aplicación **no se conecta en vivo** a SIVIGILA, al clima satelital ni a ninguna
+otra fuente: todo lo que ves viene de la serie histórica (hasta diciembre de 2025) ya
+empaquetada con el modelo. Así se usa:
+
+1. **Elige un municipio y un mes** en el panel de la izquierda (sección 1). Solo
+   aparecen los municipios para los que ya hay un modelo entrenado.
+2. **Revisa el contexto** en la sección 2: casos mensuales frente al umbral del canal
+   endémico, y el clima (lluvia y temperatura) de los últimos 24 meses hasta el mes
+   elegido.
+3. **Lee la predicción** en la sección 3: la probabilidad de que el mes elegido tenga
+   un *exceso* de casos (por encima del canal endémico), según cada uno de los tres
+   modelos. Si la probabilidad supera el umbral de decisión del modelo, se marca
+   como "⚠ Exceso probable".
+4. El dato real de ese mes (cuando ya se conoce) aparece solo como referencia
+   histórica — la predicción no lo usa.
+
+El botón **"Cargar datos de internet"** en la barra lateral es solo informativo por
+ahora: la idea es, a futuro, poder traer datos en vivo de SIVIGILA/GEE para otros
+municipios, pero eso requiere permisos adicionales que el equipo todavía no tiene.
+        """
+    )
+
+# ---------------------------------------------------------------------------
+# Barra lateral: fuente de datos en vivo (decorativo) + crédito de la foto
+# ---------------------------------------------------------------------------
+with st.sidebar:
+    st.subheader("Fuentes de datos")
+    if st.button("🌐 Cargar datos de internet (SIVIGILA, GEE...)", use_container_width=True):
+        st.warning(
+            "Se necesitan permisos adicionales para traer datos en vivo de otros "
+            "municipios (SIVIGILA, Google Earth Engine, NOAA). Por ahora la aplicación "
+            "solo trabaja con la serie histórica ya cargada. Si tu municipio no aparece "
+            "en la lista, contacta al equipo del proyecto para solicitar acceso."
+        )
+
+    st.divider()
+    if IMG_MOSQUITO.exists():
+        st.image(str(IMG_MOSQUITO), use_container_width=True)
+        st.markdown('<p class="credito-foto">Foto: National Geographic</p>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Interfaz principal
+# ---------------------------------------------------------------------------
 municipios = municipios_disponibles()
 if not municipios:
     st.error(
@@ -110,6 +219,14 @@ with col_izq:
         format_func=lambda c: municipios[c],
         help="Lista de municipios para los que ya hay un modelo entrenado.",
     )
+
+    if cod_mun == "76001":
+        st.info(
+            "Cali se incluye de forma **provisional**: XGBoost no anticipó ninguno de los "
+            "2 inicios de brote del conjunto de prueba, aunque sí detecta bien los meses "
+            "en exceso en general. Interpreta sus alertas con esa salvedad.",
+            icon="ℹ️",
+        )
 
     tabla, nivel2 = cargar_tabla(cod_mun)
     modelos, metadata = cargar_modelos(cod_mun)
@@ -192,3 +309,6 @@ Próximamente se incorporará una red neuronal recurrente (RNN) como un cuarto m
 siguiendo la jerarquía de complejidad recomendada por el experto del proyecto.
         """
     )
+
+st.divider()
+st.caption("Foto del mosquito: © National Geographic. Usada únicamente con fines ilustrativos y educativos.")
