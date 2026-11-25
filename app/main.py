@@ -286,27 +286,24 @@ if fecha <= fechas_disponibles[-3]:  # hay dato real de "exceso" ya conocido par
         "(incluido aquí solo como referencia histórica, no como parte de la predicción)."
     )
 
-with st.expander("¿Qué modelo es cada uno y con qué datos se entrenó?"):
+with st.expander("¿Qué modelo es cada uno?"):
     st.markdown(
         f"""
-Los tres modelos se entrenaron con 16 variables por mes (lluvia, temperatura y casos
-de los 4 meses anteriores, estacionalidad, el índice climático ONI y el estado del
-mes previo), sobre datos mensuales de **{municipios[cod_mun]}** desde 2012 hasta 2025,
-evaluados siempre en un conjunto de prueba separado (2023–2025) que el modelo nunca vio
-durante el entrenamiento.
+Los tres modelos aprenden del comportamiento histórico del dengue en **{municipios[cod_mun]}**:
+cuántos casos hubo cada mes entre 2012 y 2025, cómo venía la lluvia y la temperatura, la época
+del año, y si los meses recientes ya estaban en exceso. Para comprobar qué tan bien funcionan,
+cada uno se puso a prueba solo con los datos más nuevos (2023 a 2025), que nunca había visto
+antes — así se mide qué tan bien predice meses nuevos, no qué tan bien memorizó el pasado.
 
-- **Regresión logística** — modelo lineal regularizado (scikit-learn); la opción más
-  simple e interpretable, usada como referencia.
-- **XGBoost** — árboles de decisión potenciados (gradient boosting); puede capturar
-  relaciones no lineales entre las variables.
-- **Binomial negativa** — en vez de clasificar directamente, predice el número de
-  casos esperado y calcula la probabilidad de que supere el umbral del canal endémico
-  (statsmodels); aprovecha que los casos de dengue son datos de conteo.
+- **Regresión logística** — el más simple de los tres; sirve como punto de comparación.
+- **XGBoost** — busca patrones más complejos entre las variables; es el modelo principal
+  de esta aplicación.
+- **Binomial negativa** — en vez de responder directamente "sí" o "no" hay exceso, primero
+  estima cuántos casos habrá ese mes y de ahí calcula qué tan probable es que se pase del
+  umbral del canal endémico.
 
-Las métricas completas de cada modelo sobre el conjunto de prueba están en
-`models/{cod_mun}/metadata.json`, y el código de entrenamiento en `src/pipeline.py`.
-Próximamente se incorporará una red neuronal recurrente (RNN) como un cuarto modelo,
-siguiendo la jerarquía de complejidad recomendada por el experto del proyecto.
+Más adelante se planea sumar un cuarto modelo, una red neuronal, para ver si mejora estas
+predicciones.
         """
     )
 
