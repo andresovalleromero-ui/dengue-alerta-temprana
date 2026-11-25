@@ -1,0 +1,9 @@
+conteo,modelo,meses_prueba,prevalencia_exceso,prevalencia_2021_2025,f1,pr_auc,sensibilidad,inicios_anticipados,falsas_alarmas,brier
+total (probables+confirmados),Persistencia,4507,0.291,0.379,0.742,0.625,0.745,0.0,0.108,0.151
+total (probables+confirmados),Binomial negativa local,4507,0.291,0.379,0.739,0.844,0.82,0.522,0.164,0.1
+total (probables+confirmados),LightGBM global,4507,0.291,0.379,0.756,0.837,0.838,0.466,0.155,0.104
+total (probables+confirmados),GRU global (1 capa),4507,0.291,0.379,0.762,0.855,0.8,0.367,0.124,0.102
+solo confirmados,Persistencia,4328,0.382,0.532,0.797,0.712,0.799,0.0,0.127,0.155
+solo confirmados,Binomial negativa local,4328,0.382,0.532,0.789,0.882,0.821,0.524,0.161,0.11
+solo confirmados,LightGBM global,4328,0.382,0.532,0.802,0.894,0.862,0.461,0.177,0.107
+solo confirmados,GRU global (1 capa),4328,0.382,0.532,0.814,0.898,0.845,0.386,0.143,0.104

@@ -15,6 +15,7 @@ rutas:
 municipios:
   "73001": "Ibagué"
   "50001": "Villavicencio"
+  "76001": "Cali"
   "23001": "Montería"
 
 modelos_archivo:
